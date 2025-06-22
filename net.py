@@ -115,7 +115,13 @@ class MainNet(nn.Module):
 
     def forward(self, x_in, Train = True):
         """
-        Computes the output of the network given inputs
+        Forward pass through the network
+        
+        Args:
+            x_in: Input tensor of shape (batch_size, input_size)
+            
+        Returns:
+            outputs: Decoded real-valued outputs of shape (batch_size, output_size)
         """
         m = self.net_params['output_dim']
         n = self.net_params['num_joints']
