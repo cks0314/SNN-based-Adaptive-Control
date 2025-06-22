@@ -208,6 +208,15 @@ class SNNRegressor(nn.Module):
                 return c.T.detach().numpy()
                 
     def Y_out(self, x):
+        """
+        Forward pass through the network except the output layer
+        
+        Args:
+            x: Input tensor of shape (batch_size, input_size)
+            
+        Returns:
+            outputs: Decoded real-valued outputs of shape (batch_size, output_size)
+        """
         m = self.net_params['output_dim']
         n = self.net_params['num_joints']
         num_steps = self.net_params['num_steps']
@@ -305,7 +314,9 @@ def train_snn_regressor(model, train_loader, test_loader, num_epochs=10, lr=1e-3
     return train_losses, test_losses
 
 def evaluate_snn_regressor(model, test_loader, device):
-    """Evaluate the SNN regressor"""
+    """
+    Evaluate the SNN regressor
+    """
     model.eval()
     total_loss = 0
     criterion = nn.MSELoss()
@@ -321,7 +332,9 @@ def evaluate_snn_regressor(model, test_loader, device):
     return total_loss / len(test_loader)
 
 def calculate_regression_metrics(model, test_loader, device):
-    """Calculate additional regression metrics"""
+    """
+    Calculate additional regression metrics
+    """
     model.eval()
     all_outputs = []
     all_targets = []
@@ -354,7 +367,9 @@ def calculate_regression_metrics(model, test_loader, device):
     }
 
 def visualize_regression_results(model, test_data, test_targets, device, num_samples=5):
-    """Visualize regression predictions vs targets"""
+    """
+    Visualize regression predictions vs targets
+    """
     model.eval()
     model = model.to(device)
     
