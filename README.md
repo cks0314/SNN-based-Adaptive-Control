@@ -1,1 +1,0 @@
-# 1. Spiking neural network-based adaptive control of serial manipulator robots with online learning
