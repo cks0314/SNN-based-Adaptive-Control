@@ -101,7 +101,7 @@ class SNNRegressor(nn.Module):
         
         # Rate encoder and decoder
         self.encoder = RateEncoder(num_steps=num_steps)
-        # self.decoder = RateDecoder(num_steps=num_steps, output_range=output_range)
+        self.decoder = RateDecoder(num_steps=num_steps)
         
         # Network layers following the architecture
         # Layer 1: Fully Connected + ReLU (Red neurons)
@@ -187,36 +187,31 @@ class SNNRegressor(nn.Module):
             # Layer 5
             conv_out = self.max_pool2(self.conv2(spk4))
             # cur5 = self.pool(cur5)
+            spk_rec.append(conv_out)
             
-            # conv_flat = conv_out.view(batch_size, -1)
-            
-            # Output layer
-            # output = self.fc6(conv_flat)
-            
-            out_a = self.fc_A(conv_out[:,:,0,:].squeeze()).squeeze()
-            out_b = self.fc_A(conv_out[:,:,1,:].squeeze()).squeeze()
-            out_c = self.fc_A(conv_out[:,:,2,:].squeeze()).squeeze()
-    
-            if m==3:
-                c = torch.vstack((out_a,out_b,out_c))
-            elif m==2:
-                c = torch.vstack((out_a,out_b))
-    
-            if Train:
-                return c.T
-            else:
-                return c.T.detach().numpy()
+        
+        dec_out = self.decoder.decode(torch.stack(spk_rec))
+        
+        # conv_flat = conv_out.view(batch_size, -1)
+        
+        # Output layer
+        # output = self.fc6(conv_flat)
+        
+        out_a = self.fc_A(conv_out[:,:,0,:].squeeze()).squeeze()
+        out_b = self.fc_A(conv_out[:,:,1,:].squeeze()).squeeze()
+        out_c = self.fc_A(conv_out[:,:,2,:].squeeze()).squeeze()
+
+        if m==3:
+            c = torch.vstack((out_a,out_b,out_c))
+        elif m==2:
+            c = torch.vstack((out_a,out_b))
+
+        if Train:
+            return c.T
+        else:
+            return c.T.detach().numpy()
                 
     def Y_out(self, x):
-        """
-        Forward pass through the network except the output layer
-        
-        Args:
-            x: Input tensor of shape (batch_size, input_size)
-            
-        Returns:
-            outputs: Decoded real-valued outputs of shape (batch_size, output_size)
-        """
         m = self.net_params['output_dim']
         n = self.net_params['num_joints']
         num_steps = self.net_params['num_steps']
@@ -314,9 +309,7 @@ def train_snn_regressor(model, train_loader, test_loader, num_epochs=10, lr=1e-3
     return train_losses, test_losses
 
 def evaluate_snn_regressor(model, test_loader, device):
-    """
-    Evaluate the SNN regressor
-    """
+    """Evaluate the SNN regressor"""
     model.eval()
     total_loss = 0
     criterion = nn.MSELoss()
@@ -332,9 +325,7 @@ def evaluate_snn_regressor(model, test_loader, device):
     return total_loss / len(test_loader)
 
 def calculate_regression_metrics(model, test_loader, device):
-    """
-    Calculate additional regression metrics
-    """
+    """Calculate additional regression metrics"""
     model.eval()
     all_outputs = []
     all_targets = []
@@ -367,9 +358,7 @@ def calculate_regression_metrics(model, test_loader, device):
     }
 
 def visualize_regression_results(model, test_data, test_targets, device, num_samples=5):
-    """
-    Visualize regression predictions vs targets
-    """
+    """Visualize regression predictions vs targets"""
     model.eval()
     model = model.to(device)
     
